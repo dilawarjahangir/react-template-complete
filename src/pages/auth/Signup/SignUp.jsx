@@ -2,12 +2,12 @@ import React, { useState } from "react";
 import {
   Container, TextField, Button, Typography, Box,
 } from "@mui/material";
-import AuthService from "../../../services/AuthService";
+import apiService from "../../../services/apiService";
 import toast from "../../../services/ToastService";
 import { useNavigate, Link } from "react-router-dom";
 
-const SignIn = () => {
-  const [form, setForm] = useState({ email:"", password:"" });
+const SignUp = () => {
+  const [form, setForm] = useState({ name:"", email:"", password:"" });
   const navigate = useNavigate();
 
   const handleChange = (e) =>
@@ -15,24 +15,29 @@ const SignIn = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const res = await AuthService.login(form.email, form.password);
-    if (res.success) {
-      toast.success("Welcome back!");
-      navigate("/");
-    } else toast.error(res.message ?? "Login failed");
+    try {
+      const { data } = await apiService().post("/api/signup", form);
+      if (data.success) {
+        toast.success("Account created!", "Please sign in.");
+        navigate("/login");
+      }
+    } catch {
+      toast.error("Signup failed");
+    }
   };
 
   return (
     <Container maxWidth="xs">
       <Box component="form" onSubmit={handleSubmit} sx={{ mt: 8, display:"flex", flexDirection:"column", gap:2 }}>
-        <Typography variant="h5" align="center">Sign In</Typography>
+        <Typography variant="h5" align="center">Sign Up</Typography>
+        <TextField name="name"     label="Name"     required fullWidth onChange={handleChange}/>
         <TextField name="email"    label="Email"    required fullWidth onChange={handleChange}/>
         <TextField name="password" label="Password" type="password" required fullWidth onChange={handleChange}/>
-        <Button type="submit" variant="contained" fullWidth>Login</Button>
-        <Button component={Link} to="/signup" size="small">Need an account? Sign Up</Button>
+        <Button type="submit" variant="contained" fullWidth>Register</Button>
+        <Button component={Link} to="/login" size="small">Already have an account? Login</Button>
       </Box>
     </Container>
   );
 };
 
-export default SignIn;
+export default SignUp;
